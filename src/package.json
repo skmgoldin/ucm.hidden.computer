@@ -1,0 +1,14 @@
+{
+  "name": "ucm.hidden.computer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Mike Goldin <mike.goldin@protonmail.ch>",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "aws-sdk": "^2.451.0"
+  }
+}

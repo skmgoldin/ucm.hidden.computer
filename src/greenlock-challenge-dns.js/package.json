@@ -1,0 +1,33 @@
+{
+  "name": "greenlock-challenge-dns",
+  "version": "3.0.4",
+  "description": "A manual (interactive CLI) dns-based strategy for Greenlock / Let's Encrypt / ACME DNS-01 challenges",
+  "main": "index.js",
+  "files": [],
+  "scripts": {
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://git.coolaj86.com/coolaj86/greenlock-challenge-dns.js.git"
+  },
+  "keywords": [
+    "Let's Encrypt",
+    "Greenlock",
+    "ACME",
+    "dns-01",
+    "wildcard",
+    "wildcards",
+    "manual",
+    "cli",
+    "dns",
+    "challenge"
+  ],
+  "author": "AJ ONeal <coolaj86@gmail.com> (https://coolaj86.com/)",
+  "license": "(MIT OR Apache-2.0)",
+  "bugs": {
+    "url": "https://git.coolaj86.com/coolaj86/greenlock-challenge-dns.js/issues"
+  },
+  "homepage": "https://git.coolaj86.com/coolaj86/greenlock-challenge-dns.js",
+  "dependencies": {}
+}

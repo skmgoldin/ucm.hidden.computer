@@ -1,0 +1,5 @@
+*.swp
+*.swp
+
+.aws-sam
+node_modules/
