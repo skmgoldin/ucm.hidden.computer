@@ -1,12 +1,25 @@
-'use strict';
-/*global Promise*/
+/* eslint-disable no-underscore-dangle */
 
-var Challenge = module.exports;
+const Challenge = module.exports;
+
+function dnsChallengeToJson(ch) {
+  return {
+    type: ch.type,
+    altname: ch.altname,
+    identifier: ch.identifier,
+    wildcard: ch.wildcard,
+    expires: ch.expires,
+    token: ch.token,
+    thumbprint: ch.thumbprint,
+    keyAuthorization: ch.keyAuthorization,
+    dnsHost: ch.dnsHost,
+    dnsAuthorization: ch.dnsAuthorization,
+  };
+}
 
 // If your implementation needs config options, set them. Otherwise, don't bother (duh).
 Challenge.create = function (config) {
-
-  var challenger = {};
+  const challenger = {};
 
   // Note: normally you'd these right in the method body, but for the sake of
   // "Table of Contents"-style documentation, I've pulled them out.
@@ -41,29 +54,30 @@ Challenge.create = function (config) {
 
 // Show the user the token and key and wait for them to be ready to continue
 Challenge._setDns = function (args, cb) {
-  // if you need per-run / per-domain options set them in approveDomains() and they'll be on 'args' here.
+  // if you need per-run / per-domain options set them in approveDomains()
+  // and they'll be on 'args' here.
   if (!args.challenge) {
-    console.error("You must be using Greenlock v2.7+ to use greenlock-challenge-dns v3+");
+    console.error('You must be using Greenlock v2.7+ to use greenlock-challenge-dns v3+');
     process.exit();
   }
-  var ch = args.challenge;
+  const ch = args.challenge;
 
-  console.info("");
-  console.info("[ACME dns-01 '" + ch.altname + "' CHALLENGE]");
+  console.info('');
+  console.info(`[ACME dns-01 '${ch.altname}' CHALLENGE]`);
   console.info("You're about to receive the following DNS query:");
-  console.info("");
-  console.info("\tTXT\t" + ch.dnsHost + "\t" + ch.dnsAuthorization + "\tTTL 60");
-  console.info("");
+  console.info('');
+  console.info(`\tTXT\t${ch.dnsHost}\t${ch.dnsAuthorization}\tTTL 60`);
+  console.info('');
   if (ch.debug) {
-    console.info("Debug Info:");
-    console.info("");
+    console.info('Debug Info:');
+    console.info('');
     console.info(JSON.stringify(dnsChallengeToJson(ch), null, '  ').replace(/^/gm, '\t'));
-    console.info("");
+    console.info('');
   }
-  console.info("Go set that DNS record, wait a few seconds for it to propagate, and then continue when ready");
-  console.info("[Press the ANY key to continue...]");
+  console.info('Go set that DNS record, wait a few seconds for it to propagate, and then continue when ready');
+  console.info('[Press the ANY key to continue...]');
   process.stdin.resume();
-  process.stdin.once('data', function () {
+  process.stdin.once('data', () => {
     process.stdin.pause();
     cb(null, null);
   });
@@ -71,13 +85,13 @@ Challenge._setDns = function (args, cb) {
 
 // might as well tell the user that whatever they were setting up has been checked
 Challenge._removeDns = function (args) {
-  var ch = args.challenge;
-  console.info("");
-  console.info("[ACME dns-01 '" + ch.altname + "' COMPLETE]: " + ch.status);
-  console.info("Challenge complete. You may now remove the DNS-01 challenge record:");
-  console.info("");
-  console.info("\tTXT\t" + ch.altname + "\t" + ch.dnsAuthorization);
-  console.info("");
+  const ch = args.challenge;
+  console.info('');
+  console.info(`[ACME dns-01 '${ch.altname}' COMPLETE]: ${ch.status}`);
+  console.info('Challenge complete. You may now remove the DNS-01 challenge record:');
+  console.info('');
+  console.info(`\tTXT\t${ch.altname}\t${ch.dnsAuthorization}`);
+  console.info('');
 
   return null;
 };
@@ -85,32 +99,32 @@ Challenge._removeDns = function (args) {
 // This is implemented here for completeness (and perhaps some possible use in testing),
 // but it's not something you would implement because the Greenlock server isn't the NameServer.
 Challenge._getDns = function (args) {
-  var ch = args.challenge;
+  const ch = args.challenge;
   // because the way to mock a DNS challenge is weird
-  var altname = (ch.altname || ch.dnsHost || ch.identifier.value);
-  var dnsHost = (ch.dnsHost || ch.identifier.value);
+  const altname = (ch.altname || ch.dnsHost || ch.identifier.value);
+  const dnsHost = (ch.dnsHost || ch.identifier.value);
 
   if (ch._test || !Challenge._getCache[ch.token]) {
     Challenge._getCache[ch.token] = true;
-    console.info("");
-    console.info("[ACME " + ch.type + " '" + altname + "' REQUEST]: " + ch.status);
-    console.info("The '" + ch.type + "' challenge request has arrived!");
-    console.info('dig TXT ' + dnsHost);
-    console.info("(paste in the \"DNS Authorization\" you received a moment ago to respond)");
-    process.stdout.write("> ");
+    console.info('');
+    console.info(`[ACME ${ch.type} '${altname}' REQUEST]: ${ch.status}`);
+    console.info(`The '${ch.type}' challenge request has arrived!`);
+    console.info(`dig TXT ${dnsHost}`);
+    console.info('(paste in the "DNS Authorization" you received a moment ago to respond)');
+    process.stdout.write('> ');
   }
 
-  return new Promise(function (resolve, reject) {
+  return new Promise(((resolve, reject) => {
     process.stdin.resume();
     process.stdin.once('error', reject);
-    process.stdin.once('data', function (chunk) {
+    process.stdin.once('data', (chunk) => {
       process.stdin.pause();
 
-      var result = chunk.toString('utf8').trim();
+      let result = chunk.toString('utf8').trim();
       try {
         result = JSON.parse(result);
-      } catch(e) {
-        args.challenge.dnsAuthorization = result;
+      } catch (e) {
+        args.challenge.dnsAuthorization = result; // eslint-disable-line no-param-reassign
         result = args.challenge;
       }
       if (result.dnsAuthorization) {
@@ -121,21 +135,6 @@ Challenge._getDns = function (args) {
       // The return value will checked. It must not be 'undefined'.
       resolve(null);
     });
-  });
+  }));
 };
 Challenge._getCache = {};
-
-function dnsChallengeToJson(ch) {
-  return {
-    type: ch.type
-  , altname: ch.altname
-  , identifier: ch.identifier
-  , wildcard: ch.wildcard
-  , expires: ch.expires
-  , token: ch.token
-  , thumbprint: ch.thumbprint
-  , keyAuthorization: ch.keyAuthorization
-  , dnsHost: ch.dnsHost
-  , dnsAuthorization: ch.dnsAuthorization
-  };
-}
