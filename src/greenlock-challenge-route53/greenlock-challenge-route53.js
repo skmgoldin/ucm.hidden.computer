@@ -1,24 +1,9 @@
 /* eslint-disable no-underscore-dangle */
 
 const AWS = require('aws-sdk');
+const { getHostedZoneId } = require('./utils.js');
 
 const Challenge = module.exports;
-
-// Private function just to get hosted zone IDs from altnames
-async function getHostedZoneId(altname) {
-  const route53 = new AWS.Route53();
-
-  const res = (await route53.listHostedZonesByName(
-    {
-      DNSName: altname,
-      MaxItems: '1',
-    },
-  ).promise())[0];
-
-  const zoneId = res.Id.match(/(?![/hostedzone/])[a-zA-Z0-9]*/)[0];
-  return zoneId;
-}
-
 
 // If your implementation needs config options, set them. Otherwise, don't bother (duh).
 Challenge.create = (config) => {
@@ -56,7 +41,7 @@ Challenge._setDns = async (args) => {
   // If it's a wildcard altname, strip the wildcard for our purposes here
   const altname = challenge.altname.slice(0, 2) === '*.' ? challenge.altname.slice(2) : challenge.altname;
 
-  const hostedZoneId = await getHostedZoneId(altname);
+  const HostedZoneId = await getHostedZoneId(altname);
 
   const params = {
     ChangeBatch: {
@@ -76,13 +61,13 @@ Challenge._setDns = async (args) => {
         },
       ],
     },
-    hostedZoneId,
+    HostedZoneId,
   };
 
   await route53.changeResourceRecordSets(params).promise();
 
   // eslint-disable-next-line no-console
-  console.log(`Added TXT record ${challenge.dnsHost} : ${challenge.dnsAuthorization} to hosted zone with name ${altname} and ID ${hostedZoneId}`);
+  console.log(`Added TXT record ${challenge.dnsHost} : ${challenge.dnsAuthorization} to hosted zone with name ${altname} and ID ${HostedZoneId}`);
 };
 
 // Remove the DNS validation records
@@ -93,9 +78,9 @@ Challenge._removeDns = async (args) => {
   // If it's a wildcard altname, strip the wildcard for our purposes here
   const altname = challenge.altname.slice(0, 2) === '*.' ? challenge.altname.slice(2) : challenge.altname;
 
-  const hostedZoneId = await getHostedZoneId(altname);
+  const HostedZoneId = await getHostedZoneId(challenge.altname);
 
-  const params = {
+  const rrParams = {
     ChangeBatch: {
       Changes: [
         {
@@ -113,13 +98,13 @@ Challenge._removeDns = async (args) => {
         },
       ],
     },
-    hostedZoneId,
+    HostedZoneId,
   };
 
-  await route53.changeResourceRecordSets(params).promise();
+  await route53.changeResourceRecordSets(rrParams).promise();
 
   // eslint-disable-next-line no-console
-  console.log(`Removed TXT record ${challenge.dnsHost} : ${challenge.dnsAuthorization} from hosted zone with name ${altname} and ID ${hostedZoneId}`);
+  console.log(`Removed TXT record ${challenge.dnsHost} : ${challenge.dnsAuthorization} from hosted zone with name ${altname} and ID ${HostedZoneId}`);
 };
 
 // This is implemented here for completeness (and perhaps some possible use in testing),
